@@ -156,39 +156,55 @@ class create_resolution_map:
         grid_counter = np.zeros((len(self.yrange),len(self.xrange)))
         # for idx_y,y in enumerate(self.yrange):
         # TEST: implementation of the progressbar
-        print('Started counting points per cell...')
-        for idx_y in progressbar.progressbar(range(len(self.yrange))):
-            y = self.yrange[idx_y]
+        print('Started counting points per cell...')    
+        idx_y = 0
+        idx_x = 0
+        for idx in progressbar.progressbar(range(len(self.yrange)*len(self.xrange))):
             
-            for idx_x,x in enumerate(self.xrange):
-                #step 1
-                subset = self.kdtree.query_ball_point([x,y],r=radius)
-                
-                #step 2
-                if not subset:
-                    pass
-                else:
-                    count = 0
-                    for point in subset:
-                        rdx,rdy = self.data[['pnt_rdx','pnt_rdy']].iloc[point].values
-                        
-                        if x-self.cell_radius < rdx and x+self.cell_radius > rdx and y-self.cell_radius < rdy and y+self.cell_radius > rdy:
-                            count += 1
+            if idx == 0:
+                y = self.yrange[idx_y]
+            elif len(self.yrange) % idx:
+                idx_y += 1
+                y = self.yrange[idx_y]
+
+            if idx == 0:
+                pass
+            elif len(self.xrange) % idx:
+                idx_x = 0
+            else:
+                idx_x += 1
+
+            x = self.xrange[idx_x]
+            
+            # for idx_x,x in enumerate(self.xrange):
+            #step 1
+            subset = self.kdtree.query_ball_point([x,y],r=radius)
+            
+            #step 2
+            if not subset:
+                pass
+            else:
+                count = 0
+                for point in subset:
+                    rdx,rdy = self.data[['pnt_rdx','pnt_rdy']].iloc[point].values
                     
-                    grid_counter[idx_y,idx_x] = count
+                    if x-self.cell_radius < rdx and x+self.cell_radius > rdx and y-self.cell_radius < rdy and y+self.cell_radius > rdy:
+                        count += 1
                 
-                #create the square polygon
-                lbrd = rijksdriehoek.Rijksdriehoek(x-self.cell_radius,y-self.cell_radius)
-                rbrd = rijksdriehoek.Rijksdriehoek(x+self.cell_radius,y-self.cell_radius)
-                rtrd = rijksdriehoek.Rijksdriehoek(x+self.cell_radius,y+self.cell_radius)
-                ltrd = rijksdriehoek.Rijksdriehoek(x-self.cell_radius,y+self.cell_radius)
+                grid_counter[idx_y,idx_x] = count
+            
+            #create the square polygon
+            lbrd = rijksdriehoek.Rijksdriehoek(x-self.cell_radius,y-self.cell_radius)
+            rbrd = rijksdriehoek.Rijksdriehoek(x+self.cell_radius,y-self.cell_radius)
+            rtrd = rijksdriehoek.Rijksdriehoek(x+self.cell_radius,y+self.cell_radius)
+            ltrd = rijksdriehoek.Rijksdriehoek(x-self.cell_radius,y+self.cell_radius)
 
-                leftbot = lbrd.to_wgs()
-                rightbot = rbrd.to_wgs()
-                righttop = rtrd.to_wgs()
-                lefttop = ltrd.to_wgs()
+            leftbot = lbrd.to_wgs()
+            rightbot = rbrd.to_wgs()
+            righttop = rtrd.to_wgs()
+            lefttop = ltrd.to_wgs()
 
-                self.grid_polygon.append(f'POLYGON (({leftbot[1]} {leftbot[0]},{rightbot[1]} {rightbot[0]},{righttop[1]} {righttop[0]},{lefttop[1]} {lefttop[0]}))')
+            self.grid_polygon.append(f'POLYGON (({leftbot[1]} {leftbot[0]},{rightbot[1]} {rightbot[0]},{righttop[1]} {righttop[0]},{lefttop[1]} {lefttop[0]}))')
 
         self.grid_counter = grid_counter
         print(f'Elapsed time is {time.time()-start} seconds...')
