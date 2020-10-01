@@ -32,8 +32,6 @@ datasets = [
     'limburg_xf_dsc_v6_psds_hl.csv'
 ]
 
-# datasets = ['test.csv']
-
 #add the absolute path to the datasets
 for idx,data in enumerate(datasets):
     datasets[idx] = os.path.join(absolute_path,data)

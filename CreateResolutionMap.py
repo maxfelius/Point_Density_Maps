@@ -4,8 +4,13 @@
 
 Script to create a resolution map. It will combine datasets and count the amount of points per pre-defined cell
 
+TODO:
+    - Create a better coordinates transformation scheme
+    - Create saves in between steps
+    - Create github repo for version control (mess right now) 
+
 ISSUE:
-- Not all the datasets have pnt_rdx and pnt_rdy columns
+    - Not all the datasets have pnt_rdx and pnt_rdy columns
 '''
 
 #imports
@@ -22,7 +27,7 @@ import rijksdriehoek
 
 #main class
 class create_resolution_map:
-    def __init__(self,filename,resolution):
+    def __init__(self,filename,resolution,save_intermediate_results=True):
         '''
         Initiate class
 
@@ -46,6 +51,7 @@ class create_resolution_map:
         self.cell_radius = resolution/2
         self.grid_counter = None
         self.grid_polygon = []
+        self.save_intermediate_results = save_intermediate_results
 
     def start(self):
         '''
@@ -70,33 +76,45 @@ class create_resolution_map:
         '''
         Method for loading the data
         '''
-        if isinstance(self.filename,list):
-            data = pd.DataFrame(columns=self.header)
+        #check if the intermediate file already exists
+        if not os.path.exists(os.path.join('intermediate_data','combined_points.csv')):  
 
-            #for file_in in self.filename:
-            #TEST: progressbar
-            print('\nStarted reading the data...')
-            for i in progressbar.progressbar(range(len(self.filename))):
-                file_in = self.filename[i]
-                temp = pd.read_csv(file_in)
+            if isinstance(self.filename,list):
+                data = pd.DataFrame(columns=self.header)
+                
+                #for file_in in self.filename:
+                #TEST: progressbar
+                print('\nStarted reading the data...')
+                for i in progressbar.progressbar(range(len(self.filename))):
+                    file_in = self.filename[i]
+                    temp = pd.read_csv(file_in)
 
-                if 'pnt_rdx' not in list(temp) or 'pnt_rdy' not in list(temp):
-                    #creating the rd coordinates using lat/lon as input
-                    rd = rijksdriehoek.Rijksdriehoek()
-                    rd.from_wgs(temp['pnt_lat'],temp['pnt_lon'])
+                    if 'pnt_rdx' not in list(temp) or 'pnt_rdy' not in list(temp):
+                        #creating the rd coordinates using lat/lon as input
+                        rd = rijksdriehoek.Rijksdriehoek()
+                        rd.from_wgs(temp['pnt_lat'],temp['pnt_lon'])
 
-                    #create new dataframe with rd coordinates
-                    df = pd.DataFrame(np.array([rd.rd_x,rd.rd_y]).T,columns=['pnt_rdx','pnt_rdy'])
-                    temp = temp.join(df)
+                        #create new dataframe swith rd coordinates
+                        df = pd.DataFrame(np.array([rd.rd_x,rd.rd_y]).T,columns=['pnt_rdx','pnt_rdy'])
+                        temp = temp.join(df)
 
-                    data = data.append(temp[self.header], ignore_index=True)                
-                else:
-                    data = data.append(temp[self.header], ignore_index=True)
-                print(f'\nAppended {file_in} to the dataset')
+                        data = data.append(temp[self.header], ignore_index=True)                
+                    else:
+                        data = data.append(temp[self.header], ignore_index=True)
+                    print(f'\nAppended {file_in} to the dataset')
+            else:
+                data = pd.read_csv(self.filename)
+
+            # save intermediate results such that the datasets don't have to be combined every new run
+            if self.save_intermediate_results:
+                if not os.path.isdir('intermediate_data'):
+                    os.mkdir('intermediate_data')
+
+                data[self.header].to_csv(os.path.join('intermediate_data','combined_points.csv'))
+            return data
+        
         else:
-            data = pd.read_csv(self.filename)
-
-        return data
+            return pd.read_csv(os.path.join('intermediate_data','combined_points.csv'))
 
     def Create_Grid(self):
         '''
@@ -126,7 +144,6 @@ class create_resolution_map:
         Compute the grid cell
 
         TODO:
-            - Add progressbar or method to keep track of the progress of the script
         '''
         #time keeping
         start = time.time()
@@ -139,8 +156,8 @@ class create_resolution_map:
         # for idx_y,y in enumerate(self.yrange):
         # TEST: implementation of the progressbar
         print('Started counting points per cell...')
-        for idx_y in progressbar.progressbar(self.yrange):
-            y = self.yrange(idx_y)
+        for idx_y in progressbar.progressbar(range(len(self.yrange))):
+            y = self.yrange[idx_y]
             
             for idx_x,x in enumerate(self.xrange):
                 #step 1
@@ -152,7 +169,7 @@ class create_resolution_map:
                 else:
                     count = 0
                     for point in subset:
-                        rdx,rdy = self.data.iloc[point].values
+                        rdx,rdy = self.data[['pnt_rdx','pnt_rdy']].iloc[point].values
                         
                         if x-self.cell_radius < rdx and x+self.cell_radius > rdx and y-self.cell_radius < rdy and y+self.cell_radius > rdy:
                             count += 1
