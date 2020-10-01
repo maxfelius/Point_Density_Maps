@@ -10,5 +10,5 @@ TODO:
 - Create script to convert lat/lon to xyz (rijksdriehoek introduces to much error) <- IF NEEDED!
 
 Changelog:
-30/09/2020 - Create folder and scripts
+30/09/2020 - Create folder and scripts <br>
 01/10/2020 - Added to loading method a save option
