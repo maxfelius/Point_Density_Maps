@@ -115,6 +115,8 @@ class create_resolution_map:
             return data
         
         else:
+            print(f'Reading pre-computed data {self.save_data}')
+
             return pd.read_csv(os.path.join('intermediate_data',self.save_data))
 
     def Create_Grid(self):
@@ -161,15 +163,15 @@ class create_resolution_map:
         idx_x = 0
         for idx in progressbar.progressbar(range(len(self.yrange)*len(self.xrange))):
             
-            if idx == 0:
+            #update idx_y and yrange if needed
+            if idx == idx_y*len(self.xrange):
                 y = self.yrange[idx_y]
-            elif len(self.yrange) % idx:
                 idx_y += 1
-                y = self.yrange[idx_y]
 
+            #update idx_x and xrange if needed
             if idx == 0:
                 pass
-            elif len(self.xrange) % idx:
+            elif idx % len(self.xrange):
                 idx_x = 0
             else:
                 idx_x += 1
@@ -191,7 +193,7 @@ class create_resolution_map:
                     if x-self.cell_radius < rdx and x+self.cell_radius > rdx and y-self.cell_radius < rdy and y+self.cell_radius > rdy:
                         count += 1
                 
-                grid_counter[idx_y,idx_x] = count
+                grid_counter[idx_y-1,idx_x] = count
             
             #create the square polygon
             lbrd = rijksdriehoek.Rijksdriehoek(x-self.cell_radius,y-self.cell_radius)
