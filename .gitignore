@@ -1,0 +1,9 @@
+*.zip
+__pycache__
+OLD_AND_REPLACED
+.env
+.DS_Store
+#.gitignore
+.ipynb_checkpoints/Untitled-checkpoint.ipynb
+.vscode/settings.json
+intermediate_data
