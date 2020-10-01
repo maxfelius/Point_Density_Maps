@@ -27,7 +27,7 @@ import rijksdriehoek
 
 #main class
 class create_resolution_map:
-    def __init__(self,filename,resolution,save_intermediate_results=True):
+    def __init__(self,filename,resolution,filename_inter_data='combined_points.csv',save_intermediate_results=True):
         '''
         Initiate class
 
@@ -52,6 +52,7 @@ class create_resolution_map:
         self.grid_counter = None
         self.grid_polygon = []
         self.save_intermediate_results = save_intermediate_results
+        self.save_data = filename_inter_data
 
     def start(self):
         '''
@@ -77,7 +78,7 @@ class create_resolution_map:
         Method for loading the data
         '''
         #check if the intermediate file already exists
-        if not os.path.exists(os.path.join('intermediate_data','combined_points.csv')):  
+        if not os.path.exists(os.path.join('intermediate_data',self.save_data)):  
 
             if isinstance(self.filename,list):
                 data = pd.DataFrame(columns=self.header)
@@ -110,11 +111,11 @@ class create_resolution_map:
                 if not os.path.isdir('intermediate_data'):
                     os.mkdir('intermediate_data')
 
-                data[self.header].to_csv(os.path.join('intermediate_data','combined_points.csv'))
+                data[self.header].to_csv(os.path.join('intermediate_data',self.save_data))
             return data
         
         else:
-            return pd.read_csv(os.path.join('intermediate_data','combined_points.csv'))
+            return pd.read_csv(os.path.join('intermediate_data',self.save_data))
 
     def Create_Grid(self):
         '''

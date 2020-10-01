@@ -24,12 +24,12 @@ absolute_path = config('abs_path_downloads')
 #datasets used to combine
 datasets = [
     'full-pixel_mrss_rsat2_asc_t109_v3_b728bb51760435c769a9d45b3e8e74d6325b90fa.csv',
-    'full-pixel_mrss_rsat2_dsc_t302_v3_6cb798ad333fdf7ad686b31443834e676ea5a0bc.csv',
-    'full-pixel_mrss_s1_asc_t88_v4_080a1cbf7de1b6d42b3465772d9065fe7115d4bf.csv',
-    'full-pixel_mrss_s1_dsc_t37_v5_6b2ebff998208d769573c02548be69075447f465.csv',
-    'full-pixel_mrss_s1_dsc_t139_v5_47cf4b28795f4dcd36525ceb1e4741a4e9809ac0.csv',
-    'limburg_xf_asc_v8_noqc_psds_hl.csv',
-    'limburg_xf_dsc_v6_psds_hl.csv'
+    'full-pixel_mrss_rsat2_dsc_t302_v3_6cb798ad333fdf7ad686b31443834e676ea5a0bc.csv'#,
+    #'full-pixel_mrss_s1_asc_t88_v4_080a1cbf7de1b6d42b3465772d9065fe7115d4bf.csv',
+    #'full-pixel_mrss_s1_dsc_t37_v5_6b2ebff998208d769573c02548be69075447f465.csv',
+    #'full-pixel_mrss_s1_dsc_t139_v5_47cf4b28795f4dcd36525ceb1e4741a4e9809ac0.csv',
+    #'limburg_xf_asc_v8_noqc_psds_hl.csv',
+    #'limburg_xf_dsc_v6_psds_hl.csv'
 ]
 
 #add the absolute path to the datasets
@@ -53,10 +53,32 @@ for idx,data in enumerate(datasets):
 cell_radius = 100
 
 #creating the data object
-dataset_obj = CreateResolutionMap.create_resolution_map(datasets,cell_radius)
+dataset_obj = CreateResolutionMap.create_resolution_map(datasets,cell_radius,'combined_dataset_rsat.csv')
 
 #start creating the map
 data = dataset_obj.start()
 
 #save the dataset
-data.to_csv('Resolution_Map_Combined_Dataset_200x200.csv')
+data.to_csv('Resolution_Map_Combined_Dataset_RSAT_200x200.csv')
+
+
+# %% [markdown]
+# ## Sentinel 1 track map
+
+datasets = [
+	'full-pixel_mrss_s1_asc_t88_v4_080a1cbf7de1b6d42b3465772d9065fe7115d4bf.csv',
+    'full-pixel_mrss_s1_dsc_t37_v5_6b2ebff998208d769573c02548be69075447f465.csv',
+    'full-pixel_mrss_s1_dsc_t139_v5_47cf4b28795f4dcd36525ceb1e4741a4e9809ac0.csv'
+]
+
+#cell radius is the distance between the center of the square to the edge. Resolution is 2*cell_radius
+cell_radius = 100
+
+#creating the data object
+dataset_obj = CreateResolutionMap.create_resolution_map(datasets,cell_radius,'combined_dataset_s1.csv')
+
+#start creating the map
+data = dataset_obj.start()
+
+#save the dataset
+data.to_csv('Resolution_Map_Combined_Dataset_s1_200x200.csv')
