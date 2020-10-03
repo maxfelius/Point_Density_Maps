@@ -156,8 +156,7 @@ class create_resolution_map:
         radius = np.sqrt(2)*self.cell_radius*1.01
 
         grid_counter = np.zeros((len(self.yrange),len(self.xrange)))
-        # for idx_y,y in enumerate(self.yrange):
-        # TEST: implementation of the progressbar
+
         print('Started counting points per cell...')    
         idx_y = 0
         idx_x = 0
@@ -171,28 +170,37 @@ class create_resolution_map:
             #update idx_x and xrange if needed
             if idx == 0:
                 pass
-            elif idx % len(self.xrange):
-                idx_x = 0
             else:
                 idx_x += 1
 
+            if idx % len(self.xrange) == 0:
+                idx_x = 0
+
             x = self.xrange[idx_x]
-            
-            # for idx_x,x in enumerate(self.xrange):
+
             #step 1
             subset = self.kdtree.query_ball_point([x,y],r=radius)
-            
+            # subset = [] #testing if the polygon is created correctly
             #step 2
+
             if not subset:
                 pass
             else:
-                count = 0
-                for point in subset:
-                    rdx,rdy = self.data[['pnt_rdx','pnt_rdy']].iloc[point].values
-                    
-                    if x-self.cell_radius < rdx and x+self.cell_radius > rdx and y-self.cell_radius < rdy and y+self.cell_radius > rdy:
-                        count += 1
-                
+                values = np.array(self.data[['pnt_rdx','pnt_rdy']].iloc[subset].values)
+
+                rdx = values[:,0]
+                rdy = values[:,1]
+
+                #created a function so it can potentially be accelerated by using a GPU (not implemented)
+                def counter(rdx_in,rdy_in,cell_radius,x,y):
+                    count = 0
+                    for rdx,rdy in zip(rdx_in,rdy_in):
+                        if x-cell_radius < rdx and x+cell_radius > rdx and y-cell_radius < rdy and y+cell_radius > rdy:
+                            count += 1
+                    return count
+
+                count = counter(rdx,rdy,self.cell_radius,x,y)                
+
                 grid_counter[idx_y-1,idx_x] = count
             
             #create the square polygon

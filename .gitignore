@@ -7,3 +7,5 @@ OLD_AND_REPLACED
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 .vscode/settings.json
 intermediate_data
+*.qgz
+*.csv
