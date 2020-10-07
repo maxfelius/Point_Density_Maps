@@ -112,7 +112,7 @@ class create_resolution_map:
 
     def Create_Grid(self):
         '''
-        Step 2 -> create grid
+        create grid
         '''
         max_x = max(self.data['pnt_rdx'])
         min_x = min(self.data['pnt_rdx'])
@@ -136,8 +136,6 @@ class create_resolution_map:
     def Count_Points(self):
         '''
         Compute the grid cell
-
-        TODO:
         '''
         #time keeping
         start = time.time()
@@ -169,10 +167,7 @@ class create_resolution_map:
 
             x = self.xrange[idx_x]
 
-            #step 1
             subset = self.kdtree.query_ball_point([x,y],r=radius)
-            # subset = [] #testing if the polygon is created correctly
-            #step 2
 
             if not subset:
                 pass
@@ -220,7 +215,6 @@ class create_resolution_map:
 
         rd = rijksdriehoek.Rijksdriehoek(X,Y)
 
-        # wgs = np.array(list(map(rijksdriehoek.rd_to_wgs,X,Y)))
         wgs = np.array(rd.to_wgs()).T
 
         lat = wgs[:,0]
@@ -229,49 +223,3 @@ class create_resolution_map:
         data_out = np.array([X,Y,lon,lat,Z,self.grid_polygon])
 
         return pd.DataFrame(data_out.T,columns=['rd_x','rd_y','lon','lat','Counts','wkt'])
-
-    def xyz2plh(xyz, ellipse='WGS-84', method=0):
-        """
-        #(c) Hans van der Marel, Delft University of Technology, 1995,2013
-        :param xyz:Nx3 matrix XYZ with in the rows cartesian coordinates X, Y and Z
-        :param ellipse: allows to specify the ellipsoid. ELLIPS is a text
-        is a text string with the name of the ellipsoid or a vector with the
-        semi-major axis a and flattening 1/f. Default for ellips is 'WGS-84'
-        :param method:  uses the more conventional iterative method
-        instead of Bowring's method (the default method). Bowring's method is
-        faster, but can only be used on the surface of the Earth. The iterative
-        method is slower and less precise on the surface of the earth, but should
-        be used above 10-20 km of altitude.
-        :return:  Nx3 matrix PLH with ellipsoidal coordinates
-        Phi, Lambda and h. Phi and Lambda are in radians, h is in meters
-        """
-
-        a, f, GM = inqell()
-        # excentricity e(squared) and semi - minor axis
-        e2 = 2 * f - f ** 2
-        b = (1 - f) * a
-        [m, n] = xyz.shape
-
-        if n == 3 and m == 3:
-            xyz = xyz.transpose()
-
-        r = np.sqrt(xyz[:, 0] ** 2 + xyz[:, 1] ** 2);
-
-        if method == 1:
-            # compute phi via iteration
-            Np = xyz[:, 2]
-            for i in range(0, 4):
-                phi = np.arctan((xyz[:, 2] + e2 * Np) / r)
-                N = a / np.sqrt(1 - e2 * np.sin(phi) ** 2)
-                Np = N * np.sin(phi)
-
-        else:
-            # compute phi using B.R.Bowring's equation (default method)
-            u = np.arctan2(xyz[:, 2] * a, r * b)
-            phi = np.arctan2(xyz[:, 2] + (e2 / (1 - e2) * b) * np.sin(u) ** 3, r - (e2 * a) * np.cos(u) ** 3)
-            N = a / np.sqrt(1 - e2 * np.sin(phi) ** 2)
-
-        plh = np.array([phi, np.arctan2(xyz[:, 1], xyz[:, 0]), r / np.cos(phi) - N])
-        plh = plh.transpose()
-
-        return plh
