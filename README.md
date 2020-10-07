@@ -16,10 +16,10 @@ This package will enable to make different point density maps using input data. 
 ## Example point density maps
 
 ### Sentinel 1
-[image](S1.png)
+(S1.png)
 
 ### Radarsat 2
-[image](RSAT.png)
+(RSAT.png)
 
 ### Combined Sentinel 1 and Radarsat 2
-[image](Combined_Map.png)
+(Combined_Map.png)
