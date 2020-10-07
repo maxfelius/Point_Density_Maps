@@ -2,13 +2,24 @@
 
 @author: Max Felius
 
-This package will enable to make different point density maps using input data. It will also combine different dataset into one dataset in order to create higher point density maps.
+## Available Scripts
+- CreateResolutionMaps.py
+- rijksdriehoek.py
+- Create_Resolution_Map.ipynb
 
-TODO:
-- Create git repo
-- Create Python Notebook
-- Create script to convert lat/lon to xyz (rijksdriehoek introduces to much error) <- IF NEEDED!
+## Available Datasets
+- rsat2_subset_asc_r100m.csv
+- s1_subset_asc_r100m.csv
 
-Changelog:
-30/09/2020 - Create folder and scripts <br>
-01/10/2020 - Added to loading method a save option
+This package will enable to make different point density maps using input data. It can also combine different datasets into one dataset in order to create point density maps with more points.
+
+## Example point density maps
+
+### Sentinel 1
+[image](S1.png)
+
+### Radarsat 2
+[image](RSAT.png)
+
+### Combined Sentinel 1 and Radarsat 2
+[image](Combined_Map.png)

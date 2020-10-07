@@ -27,7 +27,7 @@ import rijksdriehoek
 
 #main class
 class create_resolution_map:
-    def __init__(self,filename,resolution,filename_inter_data='combined_points.csv',save_intermediate_results=True):
+    def __init__(self,filename,resolution,filename_inter_data='combined_points.csv',use_intermediate_results=True):
         '''
         Initiate class
 
@@ -51,7 +51,7 @@ class create_resolution_map:
         self.cell_radius = resolution/2
         self.grid_counter = None
         self.grid_polygon = []
-        self.save_intermediate_results = save_intermediate_results
+        self.use_intermediate_results = use_intermediate_results
         self.save_data = filename_inter_data
 
     def start(self):
@@ -78,7 +78,7 @@ class create_resolution_map:
         Method for loading the data
         '''
         #check if the intermediate file already exists
-        if not os.path.exists(os.path.join('intermediate_data',self.save_data)):  
+        if not self.use_intermediate_results:  
 
             if isinstance(self.filename,list):
                 data = pd.DataFrame(columns=self.header)
@@ -106,10 +106,9 @@ class create_resolution_map:
             else:
                 data = pd.read_csv(self.filename)
 
-            # save intermediate results such that the datasets don't have to be combined every new run
-            if self.save_intermediate_results:
-                if not os.path.isdir('intermediate_data'):
-                    os.mkdir('intermediate_data')
+            # save intermediate results such that the datasets don't have to be combined every new run    
+            if not os.path.isdir('intermediate_data'):
+                os.mkdir('intermediate_data')
 
                 data[self.header].to_csv(os.path.join('intermediate_data',self.save_data))
             return data
@@ -237,4 +236,50 @@ class create_resolution_map:
 
         data_out = np.array([X,Y,lon,lat,Z,self.grid_polygon])
 
-        return pd.DataFrame(data_out.T,columns=['rd_x','rd_y','lon','lat','Counts','wkt'])    
+        return pd.DataFrame(data_out.T,columns=['rd_x','rd_y','lon','lat','Counts','wkt'])
+
+    def xyz2plh(xyz, ellipse='WGS-84', method=0):
+        """
+        #(c) Hans van der Marel, Delft University of Technology, 1995,2013
+        :param xyz:Nx3 matrix XYZ with in the rows cartesian coordinates X, Y and Z
+        :param ellipse: allows to specify the ellipsoid. ELLIPS is a text
+        is a text string with the name of the ellipsoid or a vector with the
+        semi-major axis a and flattening 1/f. Default for ellips is 'WGS-84'
+        :param method:  uses the more conventional iterative method
+        instead of Bowring's method (the default method). Bowring's method is
+        faster, but can only be used on the surface of the Earth. The iterative
+        method is slower and less precise on the surface of the earth, but should
+        be used above 10-20 km of altitude.
+        :return:  Nx3 matrix PLH with ellipsoidal coordinates
+        Phi, Lambda and h. Phi and Lambda are in radians, h is in meters
+        """
+
+        a, f, GM = inqell()
+        # excentricity e(squared) and semi - minor axis
+        e2 = 2 * f - f ** 2
+        b = (1 - f) * a
+        [m, n] = xyz.shape
+
+        if n == 3 and m == 3:
+            xyz = xyz.transpose()
+
+        r = np.sqrt(xyz[:, 0] ** 2 + xyz[:, 1] ** 2);
+
+        if method == 1:
+            # compute phi via iteration
+            Np = xyz[:, 2]
+            for i in range(0, 4):
+                phi = np.arctan((xyz[:, 2] + e2 * Np) / r)
+                N = a / np.sqrt(1 - e2 * np.sin(phi) ** 2)
+                Np = N * np.sin(phi)
+
+        else:
+            # compute phi using B.R.Bowring's equation (default method)
+            u = np.arctan2(xyz[:, 2] * a, r * b)
+            phi = np.arctan2(xyz[:, 2] + (e2 / (1 - e2) * b) * np.sin(u) ** 3, r - (e2 * a) * np.cos(u) ** 3)
+            N = a / np.sqrt(1 - e2 * np.sin(phi) ** 2)
+
+        plh = np.array([phi, np.arctan2(xyz[:, 1], xyz[:, 0]), r / np.cos(phi) - N])
+        plh = plh.transpose()
+
+        return plh

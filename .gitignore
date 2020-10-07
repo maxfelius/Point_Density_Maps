@@ -9,3 +9,5 @@ OLD_AND_REPLACED
 intermediate_data
 *.qgz
 *.csv
+.gitignore
+.ipynb_checkpoints
