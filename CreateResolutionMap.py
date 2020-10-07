@@ -3,14 +3,6 @@
 @date: 30/09/2020
 
 Script to create a resolution map. It will combine datasets and count the amount of points per pre-defined cell
-
-TODO:
-    - Create a better coordinates transformation scheme
-    - Create saves in between steps
-    - Create github repo for version control (mess right now) 
-
-ISSUE:
-    - Not all the datasets have pnt_rdx and pnt_rdy columns
 '''
 
 #imports
