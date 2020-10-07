@@ -7,10 +7,6 @@
 - rijksdriehoek.py
 - Create_Resolution_Map.ipynb
 
-## Available Datasets
-- rsat2_subset_asc_r100m.csv
-- s1_subset_asc_r100m.csv
-
 This package will enable to make different point density maps using input data. It can also combine different datasets into one dataset in order to create point density maps with more points.
 
 ## Example point density maps
